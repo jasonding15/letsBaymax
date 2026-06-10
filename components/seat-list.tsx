@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteButton } from "@/components/delete-button";
 import { cn } from "@/lib/utils";
 import {
+  BAYS,
   BAY_EMOJI,
   BAY_LABELS,
   FLOORS,
@@ -43,7 +44,15 @@ function initial(name: string): string {
   return trimmed ? trimmed.charAt(0).toUpperCase() : "?";
 }
 
-function PersonRow({ entry, index }: { entry: SeatEntryView; index: number }) {
+function PersonRow({
+  entry,
+  index,
+  showBay = true,
+}: {
+  entry: SeatEntryView;
+  index: number;
+  showBay?: boolean;
+}) {
   return (
     <li
       style={{
@@ -64,7 +73,7 @@ function PersonRow({ entry, index }: { entry: SeatEntryView; index: number }) {
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
           <span className="truncate text-lg font-semibold">{entry.name}</span>
-          {entry.status === "at_bay" && entry.bay ? (
+          {showBay && entry.status === "at_bay" && entry.bay ? (
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="secondary">
                 {BAY_EMOJI[entry.bay]} {BAY_LABELS[entry.bay]} bay
@@ -122,13 +131,18 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
     [entries],
   );
 
-  // "At a bay" people grouped by floor (8 → 11).
-  const atBayByFloor = useMemo(
+  // "At a bay" people grouped by floor (8 → 11) then bay (N/S/E/W). Only
+  // floors/bays that actually have people show up.
+  const atBayByFloorBay = useMemo(
     () =>
-      FLOORS.map((f) => ({
-        floor: f,
-        people: atBay.filter((e) => e.floor === f),
-      })).filter((g) => g.people.length > 0),
+      FLOORS.map((floor) => {
+        const floorPeople = atBay.filter((e) => e.floor === floor);
+        const bays = BAYS.map((bay) => ({
+          bay,
+          people: floorPeople.filter((e) => e.bay === bay),
+        })).filter((b) => b.people.length > 0);
+        return { floor, bays, count: floorPeople.length };
+      }).filter((f) => f.bays.length > 0),
     [atBay],
   );
 
@@ -153,6 +167,48 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
 
   return (
     <div className="flex flex-col gap-6">
+      {atBay.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <SectionHeader
+            emoji={STATUS_EMOJI.at_bay}
+            label={STATUS_LABELS.at_bay}
+            count={atBay.length}
+            dotClass="bg-primary"
+          />
+          {atBayByFloorBay.map((floorGroup) => (
+            <div key={floorGroup.floor} className="flex flex-col gap-2">
+              <h4 className="font-semibold">
+                🏢 Floor {floorGroup.floor}
+                <span className="text-muted-foreground ml-1.5 text-sm font-normal">
+                  {floorGroup.count}
+                </span>
+              </h4>
+              {floorGroup.bays.map((bayGroup) => (
+                <div
+                  key={bayGroup.bay}
+                  className="border-border flex flex-col gap-2 border-l-2 pl-3"
+                >
+                  <h5 className="text-muted-foreground text-sm font-semibold">
+                    {BAY_EMOJI[bayGroup.bay]} {BAY_LABELS[bayGroup.bay]} bay ·{" "}
+                    {bayGroup.people.length}
+                  </h5>
+                  <ul className="flex flex-col gap-2">
+                    {bayGroup.people.map((entry, i) => (
+                      <PersonRow
+                        key={entry.id}
+                        entry={entry}
+                        index={i}
+                        showBay={false}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       {downToBay.length > 0 ? (
         <section className="flex flex-col gap-2">
           <SectionHeader
@@ -166,29 +222,6 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
               <PersonRow key={entry.id} entry={entry} index={i} />
             ))}
           </ul>
-        </section>
-      ) : null}
-
-      {atBay.length > 0 ? (
-        <section className="flex flex-col gap-3">
-          <SectionHeader
-            emoji={STATUS_EMOJI.at_bay}
-            label={STATUS_LABELS.at_bay}
-            count={atBay.length}
-            dotClass="bg-primary"
-          />
-          {atBayByFloor.map((group) => (
-            <div key={group.floor} className="flex flex-col gap-2">
-              <h4 className="text-muted-foreground text-sm font-semibold">
-                🏢 Floor {group.floor}
-              </h4>
-              <ul className="flex flex-col gap-2">
-                {group.people.map((entry, i) => (
-                  <PersonRow key={entry.id} entry={entry} index={i} />
-                ))}
-              </ul>
-            </div>
-          ))}
         </section>
       ) : null}
 

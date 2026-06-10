@@ -1,9 +1,9 @@
 /**
- * Timezone used to decide what "today" means. The visible beach list filters by
- * this local date, so the list effectively resets at local midnight.
+ * Timezone used to decide what "today" means. The visible list filters by this
+ * local date, so it effectively resets at local midnight.
  * Defaults to America/Chicago; override with APP_TIMEZONE.
  */
-export const APP_TIMEZONE = process.env.APP_TIMEZONE || "America/Chicago";
+export const APP_TIMEZONE = process.env.APP_TIMEZONE || "America/New_York";
 
 /**
  * Returns the local calendar date as a `YYYY-MM-DD` string for the given

@@ -59,7 +59,7 @@ export default async function Home() {
                 alt=""
                 width={552}
                 height={786}
-                className="h-14 w-auto mix-blend-multiply"
+                className="-my-2 h-24 w-auto mix-blend-multiply"
               />
             </div>
           </CardHeader>

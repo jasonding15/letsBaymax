@@ -125,6 +125,9 @@ export function SeatForm() {
   }, [state]);
 
   function handleSubmit(formData: FormData) {
+    // Guarantee the owner token rides along even if the mount effect hasn't set
+    // the hidden input yet — getOwnerToken() mints one synchronously if needed.
+    formData.set("ownerToken", getOwnerToken());
     const trimmed = name.trim();
     if (trimmed) localStorage.setItem(NAME_STORAGE_KEY, trimmed);
     return formAction(formData);
@@ -217,7 +220,7 @@ export function SeatForm() {
         <Textarea
           id={commentId}
           name="comment"
-          placeholder="e.g. at bay until 4pm · left bay but back in an hour"
+          placeholder="(e.g., at bay until 4pm, left bay but back in an hour, etc.)"
           maxLength={MAX_COMMENT_LENGTH}
           rows={2}
         />
@@ -231,6 +234,11 @@ export function SeatForm() {
       >
         {pending ? "Updating…" : "Set my status"}
       </Button>
+
+      <p className="text-muted-foreground text-center text-xs">
+        Already checked in? Just submit again from this device — it overrides your
+        last status, even if you change your name.
+      </p>
     </form>
   );
 }

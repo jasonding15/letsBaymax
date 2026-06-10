@@ -67,7 +67,7 @@ export async function getEntriesForDate(
     SELECT id, name, status, floor, bay, created_at, local_date, owner_hash, comment
     FROM seat_entries
     WHERE local_date = ${localDate}
-    ORDER BY created_at DESC
+    ORDER BY created_at ASC
   `) as SeatEntryRow[];
   return rows.map(mapRow);
 }
@@ -91,9 +91,10 @@ export type AddEntryResult = {
 };
 
 /**
- * Checks a person in for today, or updates their existing check-in if the same
- * name (case-insensitive) already exists for the day — so people can update their
- * status through the day. Returns whether the row was newly created or updated.
+ * Checks a person in for today, or updates their existing check-in if this
+ * browser (owner token) already has one for the day — so people can update their
+ * status (and even their name) through the day. Returns whether the row was newly
+ * created or updated. Submissions with no owner token always create a new row.
  */
 export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
   const sql = getSql();
@@ -108,12 +109,11 @@ export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
       ${input.ownerHash},
       ${input.comment}
     )
-    ON CONFLICT (local_date, lower(name)) DO UPDATE SET
+    ON CONFLICT (local_date, owner_hash) DO UPDATE SET
       name       = EXCLUDED.name,
       status     = EXCLUDED.status,
       floor      = EXCLUDED.floor,
       bay        = EXCLUDED.bay,
-      owner_hash = EXCLUDED.owner_hash,
       comment    = EXCLUDED.comment,
       created_at = now()
     RETURNING id, name, status, floor, bay, created_at, local_date, owner_hash, comment,

@@ -13,7 +13,7 @@
  * browser data forfeits the ability to delete your own entries from the UI.
  */
 
-const OWNER_STORAGE_KEY = "whosbeached:owner-token";
+const OWNER_STORAGE_KEY = "letsbaymax:owner-token";
 
 /** This browser's persistent owner token, created on first use. Client-only. */
 export function getOwnerToken(): string {
