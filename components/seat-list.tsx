@@ -7,17 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteButton } from "@/components/delete-button";
 import { cn } from "@/lib/utils";
 import {
-  BAYS,
   BAY_EMOJI,
   BAY_LABELS,
-  FLOORS,
   STATUS_EMOJI,
   STATUS_LABELS,
+  type Bay,
+  type Floor,
   type SeatEntry,
 } from "@/lib/types";
 
 /** A list entry plus a server-formatted "last updated" time label. */
 type SeatEntryView = SeatEntry & { updatedLabel: string };
+
+// Display order for the "At a bay" list: top floor first, bays clockwise-ish.
+const FLOOR_ORDER: Floor[] = [11, 10, 9, 8];
+const BAY_ORDER: Bay[] = ["N", "W", "S", "E"];
 
 // Colorful avatar gradients picked deterministically from each name.
 const AVATAR_GRADIENTS = [
@@ -131,18 +135,17 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
     [entries],
   );
 
-  // "At a bay" people grouped by floor (8 → 11) then bay (N/S/E/W). Only
-  // floors/bays that actually have people show up.
-  const atBayByFloorBay = useMemo(
+  // "At a bay" people grouped by floor (11 → 8) then bay (N, W, S, E). Only
+  // occupied floor/bay combos show up.
+  const atBayGroups = useMemo(
     () =>
-      FLOORS.map((floor) => {
-        const floorPeople = atBay.filter((e) => e.floor === floor);
-        const bays = BAYS.map((bay) => ({
+      FLOOR_ORDER.flatMap((floor) =>
+        BAY_ORDER.map((bay) => ({
+          floor,
           bay,
-          people: floorPeople.filter((e) => e.bay === bay),
-        })).filter((b) => b.people.length > 0);
-        return { floor, bays, count: floorPeople.length };
-      }).filter((f) => f.bays.length > 0),
+          people: atBay.filter((e) => e.floor === floor && e.bay === bay),
+        })).filter((g) => g.people.length > 0),
+      ),
     [atBay],
   );
 
@@ -175,35 +178,30 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
             count={atBay.length}
             dotClass="bg-primary"
           />
-          {atBayByFloorBay.map((floorGroup) => (
-            <div key={floorGroup.floor} className="flex flex-col gap-2">
-              <h4 className="font-semibold">
-                🏢 Floor {floorGroup.floor}
-                <span className="text-muted-foreground ml-1.5 text-sm font-normal">
-                  {floorGroup.count}
+          {atBayGroups.map((group) => (
+            <div
+              key={`${group.floor}-${group.bay}`}
+              className="flex flex-col gap-2"
+            >
+              <h4 className="flex items-baseline gap-2 text-xl font-extrabold">
+                <span aria-hidden>{BAY_EMOJI[group.bay]}</span>
+                <span>
+                  {group.floor} {BAY_LABELS[group.bay]}
+                </span>
+                <span className="text-muted-foreground text-sm font-normal">
+                  · {group.people.length}
                 </span>
               </h4>
-              {floorGroup.bays.map((bayGroup) => (
-                <div
-                  key={bayGroup.bay}
-                  className="border-border flex flex-col gap-2 border-l-2 pl-3"
-                >
-                  <h5 className="text-muted-foreground text-sm font-semibold">
-                    {BAY_EMOJI[bayGroup.bay]} {BAY_LABELS[bayGroup.bay]} bay ·{" "}
-                    {bayGroup.people.length}
-                  </h5>
-                  <ul className="flex flex-col gap-2">
-                    {bayGroup.people.map((entry, i) => (
-                      <PersonRow
-                        key={entry.id}
-                        entry={entry}
-                        index={i}
-                        showBay={false}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <ul className="flex flex-col gap-2">
+                {group.people.map((entry, i) => (
+                  <PersonRow
+                    key={entry.id}
+                    entry={entry}
+                    index={i}
+                    showBay={false}
+                  />
+                ))}
+              </ul>
             </div>
           ))}
         </section>
