@@ -20,13 +20,13 @@ export function OfficeDecorations() {
         height={331}
         className="absolute top-1/2 left-4 h-auto w-28 -translate-y-1/2 -scale-x-100 opacity-95 drop-shadow-md xl:left-10 xl:w-44"
       />
-      {/* Right: Baymax with a lollipop. */}
+      {/* Right: Baymax with a lollipop (background cut out to transparent). */}
       <Image
-        src="/baymaxlolipop.jpg"
+        src="/baymaxlolipop.png"
         alt=""
         width={552}
         height={786}
-        className="absolute top-1/2 right-4 h-auto w-28 -translate-y-1/2 opacity-95 xl:right-10 xl:w-44"
+        className="absolute top-1/2 right-4 h-auto w-28 -translate-y-1/2 opacity-95 drop-shadow-md xl:right-10 xl:w-44"
       />
     </div>
   );

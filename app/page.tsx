@@ -39,7 +39,7 @@ export default async function Home() {
             {getFriendlyDate()}
           </div>
           <p className="text-muted-foreground text-balance">
-            Set your status so the team knows if you&apos;re teammaxxing, down to
+            Set your status so others know if you&apos;re teammaxxing, down to
             hang, or at a bay. Update it through the day — resets at midnight.
           </p>
         </header>
