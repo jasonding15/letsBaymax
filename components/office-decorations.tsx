@@ -12,12 +12,12 @@ const WAVE = { src: "/baymaxhi.png", w: 249, h: 330 };
 const STAND = { src: "/baymax.png", w: 995, h: 1156 };
 
 const ITEMS = [
-  { ...WAVE, side: "left" as const, top: "12%" },
-  { ...STAND, side: "left" as const, top: "46%" },
-  { ...WAVE, side: "left" as const, top: "80%" },
-  { ...STAND, side: "right" as const, top: "24%" },
-  { ...WAVE, side: "right" as const, top: "58%" },
-  { ...STAND, side: "right" as const, top: "92%" },
+  { ...WAVE, side: "left" as const, top: "14%" },
+  { ...STAND, side: "left" as const, top: "48%" },
+  { ...WAVE, side: "left" as const, top: "82%" },
+  { ...STAND, side: "right" as const, top: "14%" },
+  { ...WAVE, side: "right" as const, top: "48%" },
+  { ...STAND, side: "right" as const, top: "82%" },
 ];
 
 export function OfficeDecorations() {
