@@ -129,13 +129,9 @@ export function SeatList({ entries }: { entries: SeatEntry[] }) {
   if (entries.length === 0) {
     return (
       <div className="bg-card/50 flex flex-col items-center rounded-xl border-2 border-dashed px-6 py-10 text-center">
-        <Image
-          src="/baymaxlolipop.jpg"
-          alt="Baymax holding a lollipop"
-          width={140}
-          height={199}
-          className="h-auto w-32"
-        />
+        <div className="relative h-36 w-36">
+          <Image src="/baymax.webp" alt="Baymax" fill className="object-contain" />
+        </div>
         <p className="mt-3 font-semibold">No one&apos;s checked in yet today.</p>
         <p className="text-muted-foreground mt-1 text-sm">
           Be the first — set your status above! 🤖

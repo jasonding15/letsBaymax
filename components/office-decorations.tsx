@@ -1,53 +1,33 @@
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 /**
- * Playful, non-interactive office emoji arranged in the side gutters beside the
- * centered content column. Purely decorative: hidden from assistive tech and
- * ignores pointer events. They sit *outside* the max-w-2xl column and only show
- * on large screens where there's gutter room, so nothing overlaps the content.
- * Static (no animation) to keep things calm.
+ * Two large Baymax mascots in the side gutters, beside the centered content
+ * column. Purely decorative (hidden from assistive tech, ignores pointer events)
+ * and only shown on large screens where there's gutter room. Vertically centered
+ * so they sit in the page's light zone (the lollipop shot has a white backdrop).
  */
-type Decoration = {
-  emoji: string;
-  side: "left" | "right";
-  top: string;
-};
-
-const DECORATIONS: Decoration[] = [
-  { emoji: "🤖", side: "left", top: "6%" },
-  { emoji: "🏢", side: "left", top: "31%" },
-  { emoji: "❤️", side: "left", top: "56%" },
-  { emoji: "☕", side: "left", top: "81%" },
-  { emoji: "🩹", side: "right", top: "14%" },
-  { emoji: "💻", side: "right", top: "39%" },
-  { emoji: "📍", side: "right", top: "64%" },
-  { emoji: "🎈", side: "right", top: "89%" },
-];
-
 export function OfficeDecorations() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-0 hidden select-none overflow-hidden lg:block"
+      className="pointer-events-none fixed inset-0 z-0 hidden select-none lg:block"
     >
-      <div className="relative mx-auto h-full max-w-2xl">
-        {DECORATIONS.map((d, i) => (
-          <span
-            key={i}
-            className={cn(
-              "absolute",
-              d.side === "left"
-                ? "left-0 -translate-x-[calc(100%+2rem)]"
-                : "right-0 translate-x-[calc(100%+2rem)]",
-            )}
-            style={{ top: d.top }}
-          >
-            <span className="block text-6xl opacity-50 drop-shadow-sm xl:text-7xl">
-              {d.emoji}
-            </span>
-          </span>
-        ))}
-      </div>
+      {/* Left: waving Baymax, mirrored so the wave faces inward. */}
+      <Image
+        src="/baymaxhi.png"
+        alt=""
+        width={250}
+        height={331}
+        className="absolute top-1/2 left-4 h-auto w-28 -translate-y-1/2 -scale-x-100 opacity-95 drop-shadow-md xl:left-10 xl:w-44"
+      />
+      {/* Right: Baymax with a lollipop. */}
+      <Image
+        src="/baymaxlolipop.jpg"
+        alt=""
+        width={552}
+        height={786}
+        className="absolute top-1/2 right-4 h-auto w-28 -translate-y-1/2 opacity-95 xl:right-10 xl:w-44"
+      />
     </div>
   );
 }

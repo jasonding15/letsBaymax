@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { OfficeDecorations } from "@/components/office-decorations";
 import { SeatForm } from "@/components/seat-form";
 import { SeatList } from "@/components/seat-list";
@@ -33,28 +31,9 @@ export default async function Home() {
       <OfficeDecorations />
       <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-5 px-4 py-8 sm:py-12">
         <header className="flex flex-col items-center gap-3 text-center">
-          <div className="flex items-center justify-center gap-2 sm:gap-4">
-            <Image
-              src="/baymaxhi.png"
-              alt=""
-              aria-hidden
-              width={120}
-              height={159}
-              priority
-              className="h-auto w-16 -scale-x-100 drop-shadow-md sm:w-28"
-            />
-            <h1 className="text-3xl font-extrabold tracking-tight drop-shadow-sm sm:text-5xl">
-              let&apos;s <span className="text-primary">Baymax</span>
-            </h1>
-            <Image
-              src="/baymaxhi.png"
-              alt="Baymax waving hi"
-              width={120}
-              height={159}
-              priority
-              className="h-auto w-16 drop-shadow-md sm:w-28"
-            />
-          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight drop-shadow-sm sm:text-5xl">
+            let&apos;s <span className="text-primary">Baymax</span>
+          </h1>
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-rose-500 px-5 py-2 text-lg font-bold text-white shadow-md sm:text-xl">
             <span aria-hidden>📅</span>
             {getFriendlyDate()}
