@@ -116,7 +116,7 @@ export async function addSeatEntry(
     revalidatePath("/");
     return {
       ok: true,
-      message: `${name} ${verb} — ${where}! 🤖`,
+      message: `${name} ${verb} — ${where}!`,
     };
   } catch (error) {
     console.error("addSeatEntry failed:", error);

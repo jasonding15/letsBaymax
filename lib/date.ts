@@ -33,3 +33,19 @@ export function getFriendlyDate(
     day: "numeric",
   }).format(date);
 }
+
+/**
+ * A short clock time in the app timezone (e.g. "2:45 PM"). Formatted server-side
+ * so every viewer sees the same time regardless of their own timezone.
+ */
+export function getFriendlyTime(
+  date: Date | string,
+  timeZone: string = APP_TIMEZONE,
+): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
+}

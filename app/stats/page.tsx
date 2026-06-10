@@ -43,7 +43,7 @@ export default async function StatsPage() {
         <div className="bg-card/50 flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
           <div className="relative h-36 w-36">
             <Image
-              src="/baymax.webp"
+              src="/baymax.png"
               alt="Baymax"
               fill
               className="object-contain"

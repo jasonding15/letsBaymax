@@ -113,7 +113,7 @@ export function SeatForm() {
   useEffect(() => {
     if (!state) return;
     if (state.ok) {
-      toast.success(state.message ?? "Status updated! 🤖");
+      toast.success(state.message ?? "Status updated!");
       // Keep the name (for quick re-updates); reset the rest.
       formRef.current?.reset();
       setStatus(null);
@@ -144,14 +144,14 @@ export function SeatForm() {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor={nameId} className="text-base">
-          What&apos;s your name?
+          What&apos;s your name? <span className="text-primary">*</span>
         </Label>
         <Input
           id={nameId}
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Alex Kim"
+          placeholder="e.g. Don Hall"
           required
           maxLength={MAX_NAME_LENGTH}
           autoComplete="name"
@@ -217,7 +217,7 @@ export function SeatForm() {
         <Textarea
           id={commentId}
           name="comment"
-          placeholder="e.g. free till 4, grabbing coffee, ping me on Slack"
+          placeholder="e.g. at bay until 4pm · left bay but back in an hour"
           maxLength={MAX_COMMENT_LENGTH}
           rows={2}
         />
@@ -229,7 +229,7 @@ export function SeatForm() {
         disabled={submitDisabled}
         className="h-12 w-full bg-gradient-to-r from-red-600 to-rose-500 text-base font-bold text-white shadow-md transition-all hover:from-red-500 hover:to-rose-400 hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
       >
-        {pending ? "Updating… 🤖" : "Set my status 🤖"}
+        {pending ? "Updating…" : "Set my status"}
       </Button>
     </form>
   );

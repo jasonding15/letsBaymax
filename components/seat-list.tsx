@@ -15,6 +15,9 @@ import {
   type SeatEntry,
 } from "@/lib/types";
 
+/** A list entry plus a server-formatted "last updated" time label. */
+type SeatEntryView = SeatEntry & { updatedLabel: string };
+
 // Colorful avatar gradients picked deterministically from each name.
 const AVATAR_GRADIENTS = [
   "from-rose-400 to-orange-400",
@@ -37,10 +40,10 @@ function avatarGradient(name: string): string {
 
 function initial(name: string): string {
   const trimmed = name.trim();
-  return trimmed ? trimmed.charAt(0).toUpperCase() : "🤖";
+  return trimmed ? trimmed.charAt(0).toUpperCase() : "?";
 }
 
-function PersonRow({ entry, index }: { entry: SeatEntry; index: number }) {
+function PersonRow({ entry, index }: { entry: SeatEntryView; index: number }) {
   return (
     <li
       style={{
@@ -73,6 +76,9 @@ function PersonRow({ entry, index }: { entry: SeatEntry; index: number }) {
               {entry.comment}
             </p>
           ) : null}
+          <p className="text-muted-foreground/70 text-xs">
+            Updated {entry.updatedLabel}
+          </p>
         </div>
       </div>
       <DeleteButton
@@ -106,7 +112,7 @@ function SectionHeader({
   );
 }
 
-export function SeatList({ entries }: { entries: SeatEntry[] }) {
+export function SeatList({ entries }: { entries: SeatEntryView[] }) {
   const { downToBay, atBay, working } = useMemo(
     () => ({
       downToBay: entries.filter((e) => e.status === "down_to_bay"),
@@ -129,12 +135,17 @@ export function SeatList({ entries }: { entries: SeatEntry[] }) {
   if (entries.length === 0) {
     return (
       <div className="bg-card/50 flex flex-col items-center rounded-xl border-2 border-dashed px-6 py-10 text-center">
-        <div className="relative h-36 w-36">
-          <Image src="/baymax.webp" alt="Baymax" fill className="object-contain" />
+        <div className="relative h-40 w-32">
+          <Image
+            src="/baymaxlolipop.jpg"
+            alt="Baymax holding a lollipop"
+            fill
+            className="object-contain"
+          />
         </div>
         <p className="mt-3 font-semibold">No one&apos;s checked in yet today.</p>
         <p className="text-muted-foreground mt-1 text-sm">
-          Be the first — set your status above! 🤖
+          Be the first — set your status above!
         </p>
       </div>
     );

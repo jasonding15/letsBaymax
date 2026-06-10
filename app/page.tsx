@@ -1,15 +1,16 @@
+import Image from "next/image";
+
 import { OfficeDecorations } from "@/components/office-decorations";
 import { SeatForm } from "@/components/seat-form";
 import { SeatList } from "@/components/seat-list";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { getEntriesForDate } from "@/lib/db";
-import { getFriendlyDate, getLocalDate } from "@/lib/date";
+import { getFriendlyDate, getFriendlyTime, getLocalDate } from "@/lib/date";
 
 // Always read fresh from the DB so the list reflects today's check-ins.
 export const dynamic = "force-dynamic";
@@ -25,6 +26,11 @@ export default async function Home() {
     console.error("Failed to load entries:", error);
   }
   const count = entries.length;
+  // Format each person's last-updated time server-side (in the app timezone).
+  const views = entries.map((e) => ({
+    ...e,
+    updatedLabel: getFriendlyTime(e.createdAt),
+  }));
 
   return (
     <>
@@ -46,10 +52,16 @@ export default async function Home() {
 
         <Card className="border-primary/30 gap-4 py-5 shadow-md">
           <CardHeader>
-            <CardTitle className="text-2xl">What&apos;s your status?</CardTitle>
-            <CardDescription className="text-base">
-              Teammaxxing, down to bay, or at a bay — let the team know.
-            </CardDescription>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-2xl">✍️ Check in</CardTitle>
+              <Image
+                src="/baymaxlolipop.jpg"
+                alt=""
+                width={552}
+                height={786}
+                className="h-14 w-auto mix-blend-multiply"
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <SeatForm />
@@ -70,11 +82,11 @@ export default async function Home() {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-red-600 to-rose-500 px-3 py-1 text-sm font-bold text-white shadow-sm">
-                {count} {count === 1 ? "person" : "people"} in 🤖
+                {count} {count === 1 ? "person" : "people"} in
               </span>
             )}
           </div>
-          <SeatList entries={entries} />
+          <SeatList entries={views} />
         </section>
 
         <footer className="text-muted-foreground/70 mt-auto pt-4 text-center text-xs text-balance">
