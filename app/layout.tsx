@@ -10,9 +10,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  // TODO: project-specific — set your app's name and description.
-  title: "letsbaymax",
-  description: "{{APP_DESCRIPTION}}",
+  title: "letsBaymax",
+  description: "See who's in the office today and which floor & bay they're at.",
 };
 
 export default function RootLayout({

@@ -10,10 +10,11 @@ import {
 import { getLocalDate } from "@/lib/date";
 import { hashOwnerToken } from "@/lib/owner-server";
 import {
+  BAY_LABELS,
   MAX_COMMENT_LENGTH,
   MAX_NAME_LENGTH,
-  isActivityPreference,
-  isDrinkingPreference,
+  isBay,
+  isFloor,
 } from "@/lib/types";
 
 export interface ActionResult {
@@ -22,10 +23,10 @@ export interface ActionResult {
 }
 
 /**
- * Adds the submitter to today's beach list.
- * Validates name (trimmed, non-empty, max length) and optional preferences.
+ * Checks the submitter in to today's list at a given floor + bay.
+ * Validates name, requires a valid floor and bay, and allows an optional comment.
  */
-export async function addBeachEntry(
+export async function addSeatEntry(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -33,7 +34,7 @@ export async function addBeachEntry(
   const name = typeof rawName === "string" ? rawName.trim() : "";
 
   if (!name) {
-    return { ok: false, message: "Please enter a name." };
+    return { ok: false, message: "Please enter your name." };
   }
   if (name.length > MAX_NAME_LENGTH) {
     return {
@@ -42,14 +43,16 @@ export async function addBeachEntry(
     };
   }
 
-  const rawActivity = formData.get("activityPreference");
-  const rawDrinking = formData.get("drinkingPreference");
-  const activityPreference = isActivityPreference(rawActivity)
-    ? rawActivity
-    : null;
-  const drinkingPreference = isDrinkingPreference(rawDrinking)
-    ? rawDrinking
-    : null;
+  const rawFloor = formData.get("floor");
+  const rawBay = formData.get("bay");
+  if (!isFloor(rawFloor)) {
+    return { ok: false, message: "Please pick your floor (8–11)." };
+  }
+  if (!isBay(rawBay)) {
+    return { ok: false, message: "Please pick your bay (N/S/E/W)." };
+  }
+  const floor = Number(rawFloor) as 8 | 9 | 10 | 11;
+  const bay = rawBay;
 
   const rawComment = formData.get("comment");
   const trimmedComment =
@@ -72,8 +75,8 @@ export async function addBeachEntry(
   try {
     const result = await dbAddEntry({
       name,
-      activityPreference,
-      drinkingPreference,
+      floor,
+      bay,
       localDate,
       ownerHash,
       comment,
@@ -82,11 +85,11 @@ export async function addBeachEntry(
     if (result.status === "duplicate") {
       return {
         ok: false,
-        message: `"${name}" is already on the beach today 🏖️`,
+        message: `"${name}" is already checked in today. Delete your entry first if you've moved. 🪑`,
       };
     }
 
-    // Stats are best-effort: a counter hiccup must never block adding to the list.
+    // Stats are best-effort: a counter hiccup must never block a check-in.
     try {
       await incrementCreated(localDate);
     } catch (statsError) {
@@ -94,9 +97,12 @@ export async function addBeachEntry(
     }
 
     revalidatePath("/");
-    return { ok: true, message: `${name} is on the beach! 🏖️` };
+    return {
+      ok: true,
+      message: `${name} is on Floor ${floor} · ${BAY_LABELS[bay]}! 🏢`,
+    };
   } catch (error) {
-    console.error("addBeachEntry failed:", error);
+    console.error("addSeatEntry failed:", error);
     return {
       ok: false,
       message: "Something went wrong saving your spot. Please try again.",
@@ -108,7 +114,7 @@ export async function addBeachEntry(
  * Removes an entry, but only if the caller's per-browser token hashes to the
  * owner_hash stored on the row. This is a friction layer, not real auth.
  */
-export async function removeBeachEntry(
+export async function removeSeatEntry(
   id: string,
   ownerToken: string,
 ): Promise<ActionResult> {
@@ -118,7 +124,7 @@ export async function removeBeachEntry(
   if (!ownerToken) {
     return {
       ok: false,
-      message: "You can only remove entries you added on this device.",
+      message: "You can only remove check-ins you added on this device.",
     };
   }
   try {
@@ -126,7 +132,7 @@ export async function removeBeachEntry(
     if (!deletedDate) {
       return {
         ok: false,
-        message: "You can only remove entries you added on this device.",
+        message: "You can only remove check-ins you added on this device.",
       };
     }
 
@@ -140,7 +146,7 @@ export async function removeBeachEntry(
     revalidatePath("/");
     return { ok: true };
   } catch (error) {
-    console.error("removeBeachEntry failed:", error);
-    return { ok: false, message: "Could not remove that entry." };
+    console.error("removeSeatEntry failed:", error);
+    return { ok: false, message: "Could not remove that check-in." };
   }
 }

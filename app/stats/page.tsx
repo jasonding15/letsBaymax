@@ -7,11 +7,17 @@ import { getFriendlyDate, getLocalDate } from "@/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Stats · who's beAChed?",
+  title: "Stats · letsBaymax",
 };
 
 export default async function StatsPage() {
-  const stats = await getDailyStats();
+  // Render gracefully even if the DB isn't reachable yet.
+  let stats: Awaited<ReturnType<typeof getDailyStats>> = [];
+  try {
+    stats = await getDailyStats();
+  } catch (error) {
+    console.error("Failed to load stats:", error);
+  }
   const today = getLocalDate();
 
   return (
@@ -21,7 +27,7 @@ export default async function StatsPage() {
           href="/"
           className="text-muted-foreground hover:text-foreground text-sm font-medium"
         >
-          ← Back to the beach
+          ← Back to letsBaymax
         </Link>
         <h1 className="text-3xl font-extrabold tracking-tight">📊 Daily stats</h1>
         <p className="text-muted-foreground text-sm">
@@ -37,7 +43,7 @@ export default async function StatsPage() {
           <p className="text-3xl">🗓️</p>
           <p className="mt-3 font-medium">No stats yet.</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            Numbers show up here once people start hitting the beach.
+            Numbers show up here once people start checking in.
           </p>
         </div>
       ) : (

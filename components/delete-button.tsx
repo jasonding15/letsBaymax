@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { removeBeachEntry } from "@/app/actions";
+import { removeSeatEntry } from "@/app/actions";
 import { getOwnerHash, getOwnerToken } from "@/lib/owner";
 import { Button } from "@/components/ui/button";
 
@@ -40,11 +40,11 @@ export function DeleteButton({
 
   function handleDelete() {
     startTransition(async () => {
-      const result = await removeBeachEntry(id, getOwnerToken());
+      const result = await removeSeatEntry(id, getOwnerToken());
       if (result.ok) {
-        toast.success(`Removed ${name} from the beach.`);
+        toast.success(`Checked ${name} out.`);
       } else {
-        toast.error(result.message ?? "Could not remove that entry.");
+        toast.error(result.message ?? "Could not remove that check-in.");
       }
     });
   }

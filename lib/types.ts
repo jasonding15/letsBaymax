@@ -1,18 +1,19 @@
-export const ACTIVITY_PREFERENCES = ["indoors", "outdoors", "either"] as const;
-export type ActivityPreference = (typeof ACTIVITY_PREFERENCES)[number];
+// Office layout: a square building, floors 8–11, with bays on each side.
+export const FLOORS = [8, 9, 10, 11] as const;
+export type Floor = (typeof FLOORS)[number];
 
-export const DRINKING_PREFERENCES = ["yes", "no", "indifferent"] as const;
-export type DrinkingPreference = (typeof DRINKING_PREFERENCES)[number];
+export const BAYS = ["N", "S", "E", "W"] as const;
+export type Bay = (typeof BAYS)[number];
 
 export const MAX_NAME_LENGTH = 50;
 export const MAX_COMMENT_LENGTH = 280;
 
-/** A single person on the beach for a given local day. */
-export interface BeachEntry {
+/** A single person checked in to a seat for a given local day. */
+export interface SeatEntry {
   id: string;
   name: string;
-  activityPreference: ActivityPreference | null;
-  drinkingPreference: DrinkingPreference | null;
+  floor: Floor;
+  bay: Bay;
   createdAt: string;
   localDate: string;
   /** sha256 of the creator's per-browser token. null for legacy rows. */
@@ -21,34 +22,27 @@ export interface BeachEntry {
   comment: string | null;
 }
 
-/** Human-friendly labels for activity preferences (shown as badges after submit). */
-export const ACTIVITY_LABELS: Record<ActivityPreference, string> = {
-  indoors: "Indoors",
-  outdoors: "Outdoors",
-  either: "Indoors or outdoors",
+/** Full-word labels for bays. */
+export const BAY_LABELS: Record<Bay, string> = {
+  N: "North",
+  S: "South",
+  E: "East",
+  W: "West",
 };
 
-/** Human-friendly labels for drinking preferences (shown as badges after submit). */
-export const DRINKING_LABELS: Record<DrinkingPreference, string> = {
-  yes: "Down to drink",
-  no: "Prefers not to drink",
-  indifferent: "Indifferent on drinking",
+/** A directional arrow per bay, used as a little visual cue. */
+export const BAY_EMOJI: Record<Bay, string> = {
+  N: "⬆️",
+  S: "⬇️",
+  E: "➡️",
+  W: "⬅️",
 };
 
-export function isActivityPreference(
-  value: unknown,
-): value is ActivityPreference {
-  return (
-    typeof value === "string" &&
-    (ACTIVITY_PREFERENCES as readonly string[]).includes(value)
-  );
+export function isFloor(value: unknown): value is Floor {
+  const n = typeof value === "string" ? Number(value) : value;
+  return typeof n === "number" && (FLOORS as readonly number[]).includes(n);
 }
 
-export function isDrinkingPreference(
-  value: unknown,
-): value is DrinkingPreference {
-  return (
-    typeof value === "string" &&
-    (DRINKING_PREFERENCES as readonly string[]).includes(value)
-  );
+export function isBay(value: unknown): value is Bay {
+  return typeof value === "string" && (BAYS as readonly string[]).includes(value);
 }

@@ -1,10 +1,10 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import {
-  type ActivityPreference,
-  type BeachEntry,
-  type DrinkingPreference,
-  isActivityPreference,
-  isDrinkingPreference,
+  type Bay,
+  type Floor,
+  type SeatEntry,
+  isBay,
+  isFloor,
 } from "@/lib/types";
 
 let client: NeonQueryFunction<false, false> | null = null;
@@ -27,27 +27,26 @@ function getSql(): NeonQueryFunction<false, false> {
 }
 
 /** Shape of a row as it comes back from Postgres (snake_case). */
-interface BeachEntryRow {
+interface SeatEntryRow {
   id: string;
   name: string;
-  activity_preference: string | null;
-  drinking_preference: string | null;
+  floor: number;
+  bay: string;
   created_at: string | Date;
   local_date: string | Date;
   owner_hash: string | null;
   comment: string | null;
 }
 
-function mapRow(row: BeachEntryRow): BeachEntry {
+function mapRow(row: SeatEntryRow): SeatEntry {
+  // floor/bay are NOT NULL in the schema, but fall back defensively just in case.
+  const floor = isFloor(row.floor) ? row.floor : (8 as Floor);
+  const bay = isBay(row.bay) ? row.bay : ("N" as Bay);
   return {
     id: String(row.id),
     name: row.name,
-    activityPreference: isActivityPreference(row.activity_preference)
-      ? row.activity_preference
-      : null,
-    drinkingPreference: isDrinkingPreference(row.drinking_preference)
-      ? row.drinking_preference
-      : null,
+    floor,
+    bay,
     createdAt:
       row.created_at instanceof Date
         ? row.created_at.toISOString()
@@ -58,24 +57,24 @@ function mapRow(row: BeachEntryRow): BeachEntry {
   };
 }
 
-/** Everyone on the beach for the given local date, newest first. */
+/** Everyone checked in for the given local date, newest first. */
 export async function getEntriesForDate(
   localDate: string,
-): Promise<BeachEntry[]> {
+): Promise<SeatEntry[]> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT id, name, activity_preference, drinking_preference, created_at, local_date, owner_hash, comment
-    FROM beach_entries
+    SELECT id, name, floor, bay, created_at, local_date, owner_hash, comment
+    FROM seat_entries
     WHERE local_date = ${localDate}
     ORDER BY created_at DESC
-  `) as BeachEntryRow[];
+  `) as SeatEntryRow[];
   return rows.map(mapRow);
 }
 
 export interface AddEntryInput {
   name: string;
-  activityPreference: ActivityPreference | null;
-  drinkingPreference: DrinkingPreference | null;
+  floor: Floor;
+  bay: Bay;
   localDate: string;
   /** sha256 of the creator's per-browser token, or null if none was provided. */
   ownerHash: string | null;
@@ -84,28 +83,28 @@ export interface AddEntryInput {
 }
 
 export type AddEntryResult =
-  | { status: "created"; entry: BeachEntry }
+  | { status: "created"; entry: SeatEntry }
   | { status: "duplicate" };
 
 /**
- * Inserts a person onto today's beach list. If the same name (case-insensitive)
- * already exists for the day, no row is inserted and `duplicate` is returned.
+ * Checks a person in for today. If the same name (case-insensitive) is already
+ * checked in for the day, no row is inserted and `duplicate` is returned.
  */
 export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
   const sql = getSql();
   const rows = (await sql`
-    INSERT INTO beach_entries (name, activity_preference, drinking_preference, local_date, owner_hash, comment)
+    INSERT INTO seat_entries (name, floor, bay, local_date, owner_hash, comment)
     VALUES (
       ${input.name},
-      ${input.activityPreference},
-      ${input.drinkingPreference},
+      ${input.floor},
+      ${input.bay},
       ${input.localDate},
       ${input.ownerHash},
       ${input.comment}
     )
     ON CONFLICT (local_date, lower(name)) DO NOTHING
-    RETURNING id, name, activity_preference, drinking_preference, created_at, local_date, owner_hash, comment
-  `) as BeachEntryRow[];
+    RETURNING id, name, floor, bay, created_at, local_date, owner_hash, comment
+  `) as SeatEntryRow[];
 
   if (rows.length === 0) {
     return { status: "duplicate" };
@@ -125,7 +124,7 @@ export async function deleteEntry(
 ): Promise<string | null> {
   const sql = getSql();
   const rows = (await sql`
-    DELETE FROM beach_entries
+    DELETE FROM seat_entries
     WHERE id = ${id} AND owner_hash = ${ownerHash}
     RETURNING local_date
   `) as { local_date: string | Date }[];
@@ -206,7 +205,7 @@ export async function clearPastDays(today: string): Promise<ClearedDay[]> {
   // yet finalized (covers days where users deleted everything before midnight).
   const dateRows = (await sql`
     SELECT DISTINCT d FROM (
-      SELECT local_date AS d FROM beach_entries WHERE local_date < ${today}
+      SELECT local_date AS d FROM seat_entries WHERE local_date < ${today}
       UNION
       SELECT local_date AS d FROM daily_stats
         WHERE local_date < ${today} AND finalized_at IS NULL
@@ -219,7 +218,7 @@ export async function clearPastDays(today: string): Promise<ClearedDay[]> {
     const day = String(d);
     const result = (await sql`
       WITH del AS (
-        DELETE FROM beach_entries WHERE local_date = ${day} RETURNING id
+        DELETE FROM seat_entries WHERE local_date = ${day} RETURNING id
       )
       INSERT INTO daily_stats (local_date, cleared, finalized_at)
         VALUES (${day}, (SELECT count(*) FROM del), now())
