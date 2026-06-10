@@ -30,7 +30,7 @@ export interface SeatEntry {
 }
 
 export const STATUS_LABELS: Record<Status, string> = {
-  working: "Working",
+  working: "Teammaxxing",
   down_to_bay: "Down to bay",
   at_bay: "At a bay",
 };
@@ -43,7 +43,7 @@ export const STATUS_EMOJI: Record<Status, string> = {
 
 /** Short helper text shown under each status option. */
 export const STATUS_HINTS: Record<Status, string> = {
-  working: "Heads down — not headed to a bay",
+  working: "Heads down and locked in — not at a bay",
   down_to_bay: "Free and down to hang, not there yet",
   at_bay: "Actually at a bay right now",
 };

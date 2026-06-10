@@ -8,7 +8,7 @@ import { getFriendlyDate, getLocalDate } from "@/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Stats · letsBaymax",
+  title: "Stats · let's Baymax",
 };
 
 export default async function StatsPage() {
@@ -28,7 +28,7 @@ export default async function StatsPage() {
           href="/"
           className="text-muted-foreground hover:text-foreground text-sm font-medium"
         >
-          ← Back to letsBaymax
+          ← Back to let&apos;s Baymax
         </Link>
         <h1 className="text-3xl font-extrabold tracking-tight">📊 Daily stats</h1>
         <p className="text-muted-foreground text-sm">

@@ -10,7 +10,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "letsBaymax",
+  title: "let's Baymax",
   description: "See who's in the office today and which floor & bay they're at.",
 };
 
