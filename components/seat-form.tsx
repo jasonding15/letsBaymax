@@ -236,8 +236,8 @@ export function SeatForm() {
       </Button>
 
       <p className="text-muted-foreground text-center text-xs">
-        Already checked in? Just submit again from this device — it overrides your
-        last status, even if you change your name.
+        Already checked in? Just submit again from this device — it&apos;ll
+        override your last status automatically.
       </p>
     </form>
   );
