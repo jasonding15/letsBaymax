@@ -14,14 +14,14 @@ type Decoration = {
 };
 
 const DECORATIONS: Decoration[] = [
-  { emoji: "🏢", side: "left", top: "6%" },
-  { emoji: "🪑", side: "left", top: "31%" },
-  { emoji: "💻", side: "left", top: "56%" },
+  { emoji: "🤖", side: "left", top: "6%" },
+  { emoji: "🏢", side: "left", top: "31%" },
+  { emoji: "❤️", side: "left", top: "56%" },
   { emoji: "☕", side: "left", top: "81%" },
-  { emoji: "🧭", side: "right", top: "14%" },
-  { emoji: "🖥️", side: "right", top: "39%" },
+  { emoji: "🩹", side: "right", top: "14%" },
+  { emoji: "💻", side: "right", top: "39%" },
   { emoji: "📍", side: "right", top: "64%" },
-  { emoji: "🗂️", side: "right", top: "89%" },
+  { emoji: "🎈", side: "right", top: "89%" },
 ];
 
 export function OfficeDecorations() {

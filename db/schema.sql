@@ -4,15 +4,21 @@
 CREATE TABLE IF NOT EXISTS seat_entries (
   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name        TEXT        NOT NULL,
-  floor       INTEGER     NOT NULL,   -- 8 | 9 | 10 | 11
-  bay         TEXT        NOT NULL,   -- 'N' | 'S' | 'E' | 'W'
+  status      TEXT        NOT NULL DEFAULT 'at_bay',  -- 'working' | 'down_to_bay' | 'at_bay'
+  floor       INTEGER,                                 -- set only when status = 'at_bay' (8..11)
+  bay         TEXT,                                    -- set only when status = 'at_bay' ('N'|'S'|'E'|'W')
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   local_date  DATE        NOT NULL,
-  owner_hash  TEXT,                   -- sha256 of the creator's per-browser token; NULL for legacy rows
-  comment     TEXT                    -- optional free-text note shown on the list; NULL if none
+  owner_hash  TEXT,                                    -- sha256 of the creator's per-browser token
+  comment     TEXT                                     -- optional free-text note; NULL if none
 );
 
--- One check-in per name per day (case-insensitive). Also powers ON CONFLICT DO NOTHING.
+-- Migrations for tables created before `status` / nullable floor+bay existed.
+ALTER TABLE seat_entries ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'at_bay';
+ALTER TABLE seat_entries ALTER COLUMN floor DROP NOT NULL;
+ALTER TABLE seat_entries ALTER COLUMN bay   DROP NOT NULL;
+
+-- One check-in per name per day (case-insensitive). Powers ON CONFLICT DO UPDATE.
 CREATE UNIQUE INDEX IF NOT EXISTS seat_entries_day_name_unique
   ON seat_entries (local_date, lower(name));
 
@@ -31,8 +37,7 @@ CREATE TABLE IF NOT EXISTS daily_stats (
   finalized_at TIMESTAMPTZ                       -- when the daily cron cleared the day
 );
 
--- One-time seed so existing rows count toward their day's `created` total. Safe to
--- re-run: ON CONFLICT DO NOTHING means already-tracked days are left untouched.
+-- One-time seed so existing rows count toward their day's `created` total.
 INSERT INTO daily_stats (local_date, created)
   SELECT local_date, count(*) FROM seat_entries GROUP BY local_date
   ON CONFLICT (local_date) DO NOTHING;

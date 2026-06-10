@@ -5,15 +5,22 @@ export type Floor = (typeof FLOORS)[number];
 export const BAYS = ["N", "S", "E", "W"] as const;
 export type Bay = (typeof BAYS)[number];
 
+// Availability through the day. Only `at_bay` carries a floor + bay.
+export const STATUSES = ["working", "down_to_bay", "at_bay"] as const;
+export type Status = (typeof STATUSES)[number];
+
 export const MAX_NAME_LENGTH = 50;
 export const MAX_COMMENT_LENGTH = 280;
 
-/** A single person checked in to a seat for a given local day. */
+/** A single person's current status for a given local day. */
 export interface SeatEntry {
   id: string;
   name: string;
-  floor: Floor;
-  bay: Bay;
+  status: Status;
+  /** Set only when status is "at_bay". */
+  floor: Floor | null;
+  /** Set only when status is "at_bay". */
+  bay: Bay | null;
   createdAt: string;
   localDate: string;
   /** sha256 of the creator's per-browser token. null for legacy rows. */
@@ -22,7 +29,25 @@ export interface SeatEntry {
   comment: string | null;
 }
 
-/** Full-word labels for bays. */
+export const STATUS_LABELS: Record<Status, string> = {
+  working: "Working",
+  down_to_bay: "Down to bay",
+  at_bay: "At a bay",
+};
+
+export const STATUS_EMOJI: Record<Status, string> = {
+  working: "💻",
+  down_to_bay: "🙋",
+  at_bay: "📍",
+};
+
+/** Short helper text shown under each status option. */
+export const STATUS_HINTS: Record<Status, string> = {
+  working: "Heads down — not headed to a bay",
+  down_to_bay: "Free and down to hang, not there yet",
+  at_bay: "Actually at a bay right now",
+};
+
 export const BAY_LABELS: Record<Bay, string> = {
   N: "North",
   S: "South",
@@ -45,4 +70,10 @@ export function isFloor(value: unknown): value is Floor {
 
 export function isBay(value: unknown): value is Bay {
   return typeof value === "string" && (BAYS as readonly string[]).includes(value);
+}
+
+export function isStatus(value: unknown): value is Status {
+  return (
+    typeof value === "string" && (STATUSES as readonly string[]).includes(value)
+  );
 }

@@ -6,31 +6,31 @@
 :root {
   --radius: 0.65rem;
 
-  /* Soft, sandy/seaside light theme — playful but not cheesy. */
-  --background: oklch(0.99 0.01 95);
-  --foreground: oklch(0.27 0.03 240);
+  /* Baymax/Bain theme: clean white with a confident red. */
+  --background: oklch(0.99 0.008 20);
+  --foreground: oklch(0.27 0.02 25);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.27 0.03 240);
+  --card-foreground: oklch(0.27 0.02 25);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.27 0.03 240);
+  --popover-foreground: oklch(0.27 0.02 25);
 
-  /* Ocean teal primary */
-  --primary: oklch(0.62 0.11 200);
-  --primary-foreground: oklch(0.99 0.01 200);
+  /* Bain red primary */
+  --primary: oklch(0.55 0.21 25);
+  --primary-foreground: oklch(0.99 0.01 20);
 
-  /* Warm sand secondary */
-  --secondary: oklch(0.94 0.04 90);
-  --secondary-foreground: oklch(0.4 0.05 80);
+  /* Soft warm-grey secondary */
+  --secondary: oklch(0.96 0.015 25);
+  --secondary-foreground: oklch(0.42 0.05 25);
 
-  --muted: oklch(0.96 0.02 95);
-  --muted-foreground: oklch(0.52 0.02 240);
-  --accent: oklch(0.93 0.05 195);
-  --accent-foreground: oklch(0.35 0.06 215);
+  --muted: oklch(0.97 0.01 25);
+  --muted-foreground: oklch(0.52 0.02 25);
+  --accent: oklch(0.95 0.04 22);
+  --accent-foreground: oklch(0.45 0.13 25);
 
   --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.9 0.02 200);
-  --input: oklch(0.9 0.02 200);
-  --ring: oklch(0.62 0.11 200);
+  --border: oklch(0.91 0.015 25);
+  --input: oklch(0.91 0.015 25);
+  --ring: oklch(0.55 0.21 25);
 }
 
 .dark {
@@ -40,8 +40,8 @@
   --card-foreground: oklch(0.96 0.01 95);
   --popover: oklch(0.26 0.03 235);
   --popover-foreground: oklch(0.96 0.01 95);
-  --primary: oklch(0.7 0.1 200);
-  --primary-foreground: oklch(0.2 0.03 235);
+  --primary: oklch(0.62 0.2 25);
+  --primary-foreground: oklch(0.99 0.01 20);
   --secondary: oklch(0.32 0.03 90);
   --secondary-foreground: oklch(0.92 0.02 90);
   --muted: oklch(0.3 0.02 235);
@@ -86,13 +86,13 @@
   }
   body {
     @apply text-foreground;
-    /* Clean, calm office gradient: soft blue up top fading to a light base. */
+    /* Soft red wash up top fading to clean white — Baymax on a Bain-red cushion. */
     background-color: var(--background);
     background-image: linear-gradient(
       180deg,
-      oklch(0.93 0.04 250) 0%,
-      oklch(0.96 0.02 240) 22%,
-      var(--background) 50%
+      oklch(0.92 0.07 22) 0%,
+      oklch(0.96 0.035 20) 22%,
+      var(--background) 52%
     );
     background-attachment: fixed;
   }

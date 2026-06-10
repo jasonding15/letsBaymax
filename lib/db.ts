@@ -3,8 +3,10 @@ import {
   type Bay,
   type Floor,
   type SeatEntry,
+  type Status,
   isBay,
   isFloor,
+  isStatus,
 } from "@/lib/types";
 
 let client: NeonQueryFunction<false, false> | null = null;
@@ -30,8 +32,9 @@ function getSql(): NeonQueryFunction<false, false> {
 interface SeatEntryRow {
   id: string;
   name: string;
-  floor: number;
-  bay: string;
+  status: string;
+  floor: number | null;
+  bay: string | null;
   created_at: string | Date;
   local_date: string | Date;
   owner_hash: string | null;
@@ -39,14 +42,12 @@ interface SeatEntryRow {
 }
 
 function mapRow(row: SeatEntryRow): SeatEntry {
-  // floor/bay are NOT NULL in the schema, but fall back defensively just in case.
-  const floor = isFloor(row.floor) ? row.floor : (8 as Floor);
-  const bay = isBay(row.bay) ? row.bay : ("N" as Bay);
   return {
     id: String(row.id),
     name: row.name,
-    floor,
-    bay,
+    status: isStatus(row.status) ? row.status : ("at_bay" as Status),
+    floor: isFloor(row.floor) ? row.floor : null,
+    bay: isBay(row.bay) ? row.bay : null,
     createdAt:
       row.created_at instanceof Date
         ? row.created_at.toISOString()
@@ -63,7 +64,7 @@ export async function getEntriesForDate(
 ): Promise<SeatEntry[]> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT id, name, floor, bay, created_at, local_date, owner_hash, comment
+    SELECT id, name, status, floor, bay, created_at, local_date, owner_hash, comment
     FROM seat_entries
     WHERE local_date = ${localDate}
     ORDER BY created_at DESC
@@ -73,8 +74,10 @@ export async function getEntriesForDate(
 
 export interface AddEntryInput {
   name: string;
-  floor: Floor;
-  bay: Bay;
+  status: Status;
+  /** Only meaningful when status is "at_bay"; null otherwise. */
+  floor: Floor | null;
+  bay: Bay | null;
   localDate: string;
   /** sha256 of the creator's per-browser token, or null if none was provided. */
   ownerHash: string | null;
@@ -82,34 +85,43 @@ export interface AddEntryInput {
   comment: string | null;
 }
 
-export type AddEntryResult =
-  | { status: "created"; entry: SeatEntry }
-  | { status: "duplicate" };
+export type AddEntryResult = {
+  outcome: "created" | "updated";
+  entry: SeatEntry;
+};
 
 /**
- * Checks a person in for today. If the same name (case-insensitive) is already
- * checked in for the day, no row is inserted and `duplicate` is returned.
+ * Checks a person in for today, or updates their existing check-in if the same
+ * name (case-insensitive) already exists for the day — so people can update their
+ * status through the day. Returns whether the row was newly created or updated.
  */
 export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
   const sql = getSql();
   const rows = (await sql`
-    INSERT INTO seat_entries (name, floor, bay, local_date, owner_hash, comment)
+    INSERT INTO seat_entries (name, status, floor, bay, local_date, owner_hash, comment)
     VALUES (
       ${input.name},
+      ${input.status},
       ${input.floor},
       ${input.bay},
       ${input.localDate},
       ${input.ownerHash},
       ${input.comment}
     )
-    ON CONFLICT (local_date, lower(name)) DO NOTHING
-    RETURNING id, name, floor, bay, created_at, local_date, owner_hash, comment
-  `) as SeatEntryRow[];
+    ON CONFLICT (local_date, lower(name)) DO UPDATE SET
+      name       = EXCLUDED.name,
+      status     = EXCLUDED.status,
+      floor      = EXCLUDED.floor,
+      bay        = EXCLUDED.bay,
+      owner_hash = EXCLUDED.owner_hash,
+      comment    = EXCLUDED.comment,
+      created_at = now()
+    RETURNING id, name, status, floor, bay, created_at, local_date, owner_hash, comment,
+      (xmax = 0) AS inserted
+  `) as (SeatEntryRow & { inserted: boolean })[];
 
-  if (rows.length === 0) {
-    return { status: "duplicate" };
-  }
-  return { status: "created", entry: mapRow(rows[0]) };
+  const row = rows[0];
+  return { outcome: row.inserted ? "created" : "updated", entry: mapRow(row) };
 }
 
 /**

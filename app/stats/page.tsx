@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getDailyStats } from "@/lib/db";
@@ -39,8 +40,15 @@ export default async function StatsPage() {
       </header>
 
       {stats.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-card/50 px-6 py-12 text-center">
-          <p className="text-3xl">🗓️</p>
+        <div className="bg-card/50 flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
+          <div className="relative h-36 w-36">
+            <Image
+              src="/baymax.webp"
+              alt="Baymax"
+              fill
+              className="object-contain"
+            />
+          </div>
           <p className="mt-3 font-medium">No stats yet.</p>
           <p className="text-muted-foreground mt-1 text-sm">
             Numbers show up here once people start checking in.

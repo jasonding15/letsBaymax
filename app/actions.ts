@@ -13,8 +13,12 @@ import {
   BAY_LABELS,
   MAX_COMMENT_LENGTH,
   MAX_NAME_LENGTH,
+  STATUS_LABELS,
   isBay,
   isFloor,
+  isStatus,
+  type Bay,
+  type Floor,
 } from "@/lib/types";
 
 export interface ActionResult {
@@ -23,8 +27,8 @@ export interface ActionResult {
 }
 
 /**
- * Checks the submitter in to today's list at a given floor + bay.
- * Validates name, requires a valid floor and bay, and allows an optional comment.
+ * Checks the submitter in (or updates them) with a status for today. When the
+ * status is "at_bay", a valid floor + bay are required; otherwise they're ignored.
  */
 export async function addSeatEntry(
   _prevState: ActionResult | null,
@@ -43,16 +47,27 @@ export async function addSeatEntry(
     };
   }
 
-  const rawFloor = formData.get("floor");
-  const rawBay = formData.get("bay");
-  if (!isFloor(rawFloor)) {
-    return { ok: false, message: "Please pick your floor (8–11)." };
+  const rawStatus = formData.get("status");
+  if (!isStatus(rawStatus)) {
+    return { ok: false, message: "Please pick your status." };
   }
-  if (!isBay(rawBay)) {
-    return { ok: false, message: "Please pick your bay (N/S/E/W)." };
+  const status = rawStatus;
+
+  // Floor + bay only apply when actually at a bay.
+  let floor: Floor | null = null;
+  let bay: Bay | null = null;
+  if (status === "at_bay") {
+    const rawFloor = formData.get("floor");
+    const rawBay = formData.get("bay");
+    if (!isFloor(rawFloor)) {
+      return { ok: false, message: "Please pick your floor (8–11)." };
+    }
+    if (!isBay(rawBay)) {
+      return { ok: false, message: "Please pick your bay (N/S/E/W)." };
+    }
+    floor = Number(rawFloor) as Floor;
+    bay = rawBay;
   }
-  const floor = Number(rawFloor) as 8 | 9 | 10 | 11;
-  const bay = rawBay;
 
   const rawComment = formData.get("comment");
   const trimmedComment =
@@ -75,6 +90,7 @@ export async function addSeatEntry(
   try {
     const result = await dbAddEntry({
       name,
+      status,
       floor,
       bay,
       localDate,
@@ -82,24 +98,25 @@ export async function addSeatEntry(
       comment,
     });
 
-    if (result.status === "duplicate") {
-      return {
-        ok: false,
-        message: `"${name}" is already checked in today. Delete your entry first if you've moved. 🪑`,
-      };
+    // Only count brand-new check-ins toward the daily `created` stat, not updates.
+    if (result.outcome === "created") {
+      try {
+        await incrementCreated(localDate);
+      } catch (statsError) {
+        console.error("incrementCreated failed:", statsError);
+      }
     }
 
-    // Stats are best-effort: a counter hiccup must never block a check-in.
-    try {
-      await incrementCreated(localDate);
-    } catch (statsError) {
-      console.error("incrementCreated failed:", statsError);
-    }
+    const where =
+      status === "at_bay" && floor && bay
+        ? `Floor ${floor} · ${BAY_LABELS[bay]}`
+        : STATUS_LABELS[status];
+    const verb = result.outcome === "created" ? "checked in" : "updated";
 
     revalidatePath("/");
     return {
       ok: true,
-      message: `${name} is on Floor ${floor} · ${BAY_LABELS[bay]}! 🏢`,
+      message: `${name} ${verb} — ${where}! 🤖`,
     };
   } catch (error) {
     console.error("addSeatEntry failed:", error);
