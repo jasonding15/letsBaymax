@@ -65,41 +65,39 @@ function PersonRow({
         animation: "pop-in 0.4s ease-out both",
         animationDelay: `${Math.min(index, 8) * 45}ms`,
       }}
-      className="bg-card flex items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="bg-card flex items-center justify-between gap-2 rounded-lg border px-3 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="flex min-w-0 items-start gap-3">
+      <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden
           className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-base font-bold text-white shadow-sm",
+            "flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white shadow-sm",
             avatarGradient(entry.name),
           )}
         >
           {initial(entry.name)}
         </span>
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <span className="truncate text-lg font-semibold">{entry.name}</span>
-          {entry.tenure ||
-          (showBay && entry.status === "at_bay" && entry.bay) ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {entry.tenure ? (
-                <Badge variant="outline">{entry.tenure}</Badge>
-              ) : null}
-              {showBay && entry.status === "at_bay" && entry.bay ? (
-                <Badge variant="secondary">
-                  {BAY_EMOJI[entry.bay]} {BAY_LABELS[entry.bay]} bay
-                </Badge>
-              ) : null}
-            </div>
+        {/* Name, tenure/bay, caption, and time share one wrapping line. */}
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="font-semibold">{entry.name}</span>
+          {entry.tenure ? (
+            <Badge variant="outline" className="px-1.5 py-0 text-xs">
+              {entry.tenure}
+            </Badge>
+          ) : null}
+          {showBay && entry.status === "at_bay" && entry.bay ? (
+            <Badge variant="secondary" className="px-1.5 py-0 text-xs">
+              {BAY_EMOJI[entry.bay]} {BAY_LABELS[entry.bay]}
+            </Badge>
           ) : null}
           {entry.comment ? (
-            <p className="text-muted-foreground text-sm italic break-words whitespace-pre-wrap">
+            <span className="text-muted-foreground min-w-0 text-sm break-words italic">
               {entry.comment}
-            </p>
+            </span>
           ) : null}
-          <p className="text-muted-foreground/70 text-xs">
-            Updated {entry.updatedLabel}
-          </p>
+          <span className="text-muted-foreground/60 text-xs whitespace-nowrap">
+            {entry.updatedLabel}
+          </span>
         </div>
       </div>
       <DeleteButton
@@ -212,8 +210,16 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-card/50 rounded-xl border border-dashed px-6 py-10 text-center">
-          <p className="font-medium">No one here.</p>
+        <div className="bg-card/50 flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
+          <div className="relative h-32 w-28">
+            <Image
+              src="/baymaxlolipop.jpg"
+              alt="Baymax holding a lollipop"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <p className="mt-3 font-medium">No one here.</p>
           <p className="text-muted-foreground mt-1 text-sm">
             No {tenureFilter} is checked in right now.
           </p>
@@ -242,7 +248,7 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
                   · {group.people.length}
                 </span>
               </h4>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-1.5">
                 {group.people.map((entry, i) => (
                   <PersonRow
                     key={entry.id}
@@ -265,7 +271,7 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
             count={downToBay.length}
             dotClass="bg-emerald-500"
           />
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-1.5">
             {downToBay.map((entry, i) => (
               <PersonRow key={entry.id} entry={entry} index={i} />
             ))}
@@ -281,7 +287,7 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
             count={working.length}
             dotClass="bg-slate-400"
           />
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-1.5">
             {working.map((entry, i) => (
               <PersonRow key={entry.id} entry={entry} index={i} />
             ))}
