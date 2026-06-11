@@ -59,7 +59,7 @@ function ChipQuestion({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <Label>
         {question} <span className="text-primary">*</span>
       </Label>
@@ -151,7 +151,7 @@ export function SeatForm() {
     (needsBay && (!floor || !bay));
 
   return (
-    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-4">
+    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-3">
       {/* Hidden inputs carry the chip selections into FormData. */}
       <input type="hidden" name="tenure" value={tenure ?? ""} />
       <input type="hidden" name="status" value={status ?? ""} />
@@ -176,7 +176,7 @@ export function SeatForm() {
             className="h-11 text-base"
           />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <Label className="text-base">
             Tenure <span className="text-primary">*</span>
           </Label>
@@ -204,11 +204,11 @@ export function SeatForm() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label>
           What&apos;s your status? <span className="text-primary">*</span>
         </Label>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-1.5 sm:grid-cols-3">
           {STATUSES.map((s) => {
             const selected = status === s;
             return (
@@ -218,7 +218,7 @@ export function SeatForm() {
                 aria-pressed={selected}
                 onClick={() => setStatus(s)}
                 className={cn(
-                  "flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-colors",
+                  "flex flex-col items-start gap-0.5 rounded-xl border p-2.5 text-left transition-colors",
                   selected
                     ? "border-primary bg-primary/5 ring-primary/40 ring-2"
                     : "border-input bg-background hover:bg-accent",
@@ -238,7 +238,7 @@ export function SeatForm() {
       </div>
 
       {needsBay ? (
-        <div className="bg-muted/30 flex flex-col gap-4 rounded-xl border border-dashed p-3.5">
+        <div className="bg-muted/30 flex flex-col gap-3 rounded-xl border border-dashed p-3">
           <ChipQuestion
             question="Which floor?"
             options={FLOOR_OPTIONS}
@@ -254,7 +254,7 @@ export function SeatForm() {
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor={commentId}>
           Any comments?{" "}
           <span className="text-muted-foreground font-normal">(optional)</span>
@@ -265,6 +265,7 @@ export function SeatForm() {
           placeholder="(e.g., at bay until 4pm, left bay but back in an hour, etc.)"
           maxLength={MAX_COMMENT_LENGTH}
           rows={2}
+          className="min-h-0"
         />
       </div>
 

@@ -50,7 +50,7 @@ export default async function Home() {
           </p>
         </header>
 
-        <Card className="border-primary/30 gap-4 py-5 shadow-md">
+        <Card className="border-primary/30 gap-3 py-4 shadow-md">
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-2xl">✍️ Check in</CardTitle>
