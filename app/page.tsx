@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { OfficeDecorations } from "@/components/office-decorations";
 import { SeatForm } from "@/components/seat-form";
 import { SeatList } from "@/components/seat-list";
@@ -52,16 +50,7 @@ export default async function Home() {
 
         <Card className="border-primary/30 gap-3 py-4 shadow-md">
           <CardHeader>
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-2xl">✍️ Check in</CardTitle>
-              <Image
-                src="/baymaxlolipop.jpg"
-                alt=""
-                width={552}
-                height={786}
-                className="-my-2 h-24 w-auto mix-blend-multiply"
-              />
-            </div>
+            <CardTitle className="text-2xl">✍️ Check in</CardTitle>
           </CardHeader>
           <CardContent>
             <SeatForm />
