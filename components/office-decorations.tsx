@@ -10,16 +10,14 @@ import { cn } from "@/lib/utils";
  */
 const WAVE = { src: "/baymaxhi.png", w: 249, h: 330 };
 const STAND = { src: "/baymax.png", w: 995, h: 1156 };
-const LOLLY = { src: "/baymaxlolipop-cut.png", w: 260, h: 377 };
 
-// Each side gets all three poses, at matching vertical levels.
 const ITEMS = [
   { ...WAVE, side: "left" as const, top: "14%" },
   { ...STAND, side: "left" as const, top: "48%" },
-  { ...LOLLY, side: "left" as const, top: "82%" },
+  { ...WAVE, side: "left" as const, top: "82%" },
   { ...STAND, side: "right" as const, top: "14%" },
-  { ...LOLLY, side: "right" as const, top: "48%" },
-  { ...WAVE, side: "right" as const, top: "82%" },
+  { ...WAVE, side: "right" as const, top: "48%" },
+  { ...STAND, side: "right" as const, top: "82%" },
 ];
 
 export function OfficeDecorations() {
