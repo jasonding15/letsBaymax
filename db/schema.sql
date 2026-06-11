@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS seat_entries (
   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name        TEXT        NOT NULL,
+  tenure      TEXT,                                    -- 'AC1' | 'AC2' | 'Other'
   status      TEXT        NOT NULL DEFAULT 'at_bay',  -- 'working' | 'down_to_bay' | 'at_bay'
   floor       INTEGER,                                 -- set only when status = 'at_bay' (8..11)
   bay         TEXT,                                    -- set only when status = 'at_bay' ('N'|'S'|'E'|'W')
@@ -13,8 +14,9 @@ CREATE TABLE IF NOT EXISTS seat_entries (
   comment     TEXT                                     -- optional free-text note; NULL if none
 );
 
--- Migrations for tables created before `status` / nullable floor+bay existed.
+-- Migrations for tables created before these columns existed.
 ALTER TABLE seat_entries ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'at_bay';
+ALTER TABLE seat_entries ADD COLUMN IF NOT EXISTS tenure TEXT;
 ALTER TABLE seat_entries ALTER COLUMN floor DROP NOT NULL;
 ALTER TABLE seat_entries ALTER COLUMN bay   DROP NOT NULL;
 

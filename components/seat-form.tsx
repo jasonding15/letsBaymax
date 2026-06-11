@@ -21,10 +21,13 @@ import {
   STATUS_EMOJI,
   STATUS_HINTS,
   STATUS_LABELS,
+  TENURES,
   type Status,
+  type Tenure,
 } from "@/lib/types";
 
 const NAME_STORAGE_KEY = "letsbaymax:last-name";
+const TENURE_STORAGE_KEY = "letsbaymax:tenure";
 
 interface ChipOption {
   value: string;
@@ -92,6 +95,7 @@ export function SeatForm() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [name, setName] = useState("");
+  const [tenure, setTenure] = useState<Tenure | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [floor, setFloor] = useState<string | null>(null);
   const [bay, setBay] = useState<string | null>(null);
@@ -103,6 +107,10 @@ export function SeatForm() {
     setOwnerToken(getOwnerToken());
     const saved = localStorage.getItem(NAME_STORAGE_KEY);
     if (saved) setName(saved);
+    const savedTenure = localStorage.getItem(TENURE_STORAGE_KEY);
+    if (savedTenure && (TENURES as readonly string[]).includes(savedTenure)) {
+      setTenure(savedTenure as Tenure);
+    }
   }, []);
 
   const [state, formAction, pending] = useActionState<
@@ -130,36 +138,70 @@ export function SeatForm() {
     formData.set("ownerToken", getOwnerToken());
     const trimmed = name.trim();
     if (trimmed) localStorage.setItem(NAME_STORAGE_KEY, trimmed);
+    if (tenure) localStorage.setItem(TENURE_STORAGE_KEY, tenure);
     return formAction(formData);
   }
 
   const needsBay = status === "at_bay";
   const submitDisabled =
-    pending || !name.trim() || !status || (needsBay && (!floor || !bay));
+    pending ||
+    !name.trim() ||
+    !tenure ||
+    !status ||
+    (needsBay && (!floor || !bay));
 
   return (
     <form ref={formRef} action={handleSubmit} className="flex flex-col gap-4">
       {/* Hidden inputs carry the chip selections into FormData. */}
+      <input type="hidden" name="tenure" value={tenure ?? ""} />
       <input type="hidden" name="status" value={status ?? ""} />
       <input type="hidden" name="floor" value={needsBay ? (floor ?? "") : ""} />
       <input type="hidden" name="bay" value={needsBay ? (bay ?? "") : ""} />
       <input type="hidden" name="ownerToken" value={ownerToken} />
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={nameId} className="text-base">
-          What&apos;s your name? <span className="text-primary">*</span>
-        </Label>
-        <Input
-          id={nameId}
-          name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Don Hall"
-          required
-          maxLength={MAX_NAME_LENGTH}
-          autoComplete="name"
-          className="h-11 text-base"
-        />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div className="flex flex-1 flex-col gap-2">
+          <Label htmlFor={nameId} className="text-base">
+            What&apos;s your name? <span className="text-primary">*</span>
+          </Label>
+          <Input
+            id={nameId}
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Don Hall"
+            required
+            maxLength={MAX_NAME_LENGTH}
+            autoComplete="name"
+            className="h-11 text-base"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-base">
+            Tenure <span className="text-primary">*</span>
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {TENURES.map((t) => {
+              const selected = tenure === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setTenure(t)}
+                  className={cn(
+                    "inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors",
+                    selected
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-input bg-background hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

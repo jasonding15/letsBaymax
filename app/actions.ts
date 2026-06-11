@@ -17,6 +17,7 @@ import {
   isBay,
   isFloor,
   isStatus,
+  isTenure,
   type Bay,
   type Floor,
 } from "@/lib/types";
@@ -46,6 +47,12 @@ export async function addSeatEntry(
       message: `Name must be ${MAX_NAME_LENGTH} characters or fewer.`,
     };
   }
+
+  const rawTenure = formData.get("tenure");
+  if (!isTenure(rawTenure)) {
+    return { ok: false, message: "Please pick your tenure (AC1/AC2/Other)." };
+  }
+  const tenure = rawTenure;
 
   const rawStatus = formData.get("status");
   if (!isStatus(rawStatus)) {
@@ -90,6 +97,7 @@ export async function addSeatEntry(
   try {
     const result = await dbAddEntry({
       name,
+      tenure,
       status,
       floor,
       bay,

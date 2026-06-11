@@ -4,9 +4,11 @@ import {
   type Floor,
   type SeatEntry,
   type Status,
+  type Tenure,
   isBay,
   isFloor,
   isStatus,
+  isTenure,
 } from "@/lib/types";
 
 let client: NeonQueryFunction<false, false> | null = null;
@@ -32,6 +34,7 @@ function getSql(): NeonQueryFunction<false, false> {
 interface SeatEntryRow {
   id: string;
   name: string;
+  tenure: string | null;
   status: string;
   floor: number | null;
   bay: string | null;
@@ -45,6 +48,7 @@ function mapRow(row: SeatEntryRow): SeatEntry {
   return {
     id: String(row.id),
     name: row.name,
+    tenure: isTenure(row.tenure) ? row.tenure : null,
     status: isStatus(row.status) ? row.status : ("at_bay" as Status),
     floor: isFloor(row.floor) ? row.floor : null,
     bay: isBay(row.bay) ? row.bay : null,
@@ -64,16 +68,17 @@ export async function getEntriesForDate(
 ): Promise<SeatEntry[]> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT id, name, status, floor, bay, created_at, local_date, owner_hash, comment
+    SELECT id, name, tenure, status, floor, bay, created_at, local_date, owner_hash, comment
     FROM seat_entries
     WHERE local_date = ${localDate}
-    ORDER BY created_at ASC
+    ORDER BY created_at DESC
   `) as SeatEntryRow[];
   return rows.map(mapRow);
 }
 
 export interface AddEntryInput {
   name: string;
+  tenure: Tenure | null;
   status: Status;
   /** Only meaningful when status is "at_bay"; null otherwise. */
   floor: Floor | null;
@@ -99,9 +104,10 @@ export type AddEntryResult = {
 export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
   const sql = getSql();
   const rows = (await sql`
-    INSERT INTO seat_entries (name, status, floor, bay, local_date, owner_hash, comment)
+    INSERT INTO seat_entries (name, tenure, status, floor, bay, local_date, owner_hash, comment)
     VALUES (
       ${input.name},
+      ${input.tenure},
       ${input.status},
       ${input.floor},
       ${input.bay},
@@ -111,12 +117,13 @@ export async function addEntry(input: AddEntryInput): Promise<AddEntryResult> {
     )
     ON CONFLICT (local_date, owner_hash) DO UPDATE SET
       name       = EXCLUDED.name,
+      tenure     = EXCLUDED.tenure,
       status     = EXCLUDED.status,
       floor      = EXCLUDED.floor,
       bay        = EXCLUDED.bay,
       comment    = EXCLUDED.comment,
       created_at = now()
-    RETURNING id, name, status, floor, bay, created_at, local_date, owner_hash, comment,
+    RETURNING id, name, tenure, status, floor, bay, created_at, local_date, owner_hash, comment,
       (xmax = 0) AS inserted
   `) as (SeatEntryRow & { inserted: boolean })[];
 

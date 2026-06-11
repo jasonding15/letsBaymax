@@ -5,6 +5,10 @@ export type Floor = (typeof FLOORS)[number];
 export const BAYS = ["N", "S", "E", "W"] as const;
 export type Bay = (typeof BAYS)[number];
 
+// Tenure buckets (Bain ACs, plus a catch-all).
+export const TENURES = ["AC1", "AC2", "Other"] as const;
+export type Tenure = (typeof TENURES)[number];
+
 // Availability through the day. Only `at_bay` carries a floor + bay.
 export const STATUSES = ["working", "down_to_bay", "at_bay"] as const;
 export type Status = (typeof STATUSES)[number];
@@ -16,6 +20,7 @@ export const MAX_COMMENT_LENGTH = 280;
 export interface SeatEntry {
   id: string;
   name: string;
+  tenure: Tenure | null;
   status: Status;
   /** Set only when status is "at_bay". */
   floor: Floor | null;
@@ -70,6 +75,12 @@ export function isFloor(value: unknown): value is Floor {
 
 export function isBay(value: unknown): value is Bay {
   return typeof value === "string" && (BAYS as readonly string[]).includes(value);
+}
+
+export function isTenure(value: unknown): value is Tenure {
+  return (
+    typeof value === "string" && (TENURES as readonly string[]).includes(value)
+  );
 }
 
 export function isStatus(value: unknown): value is Status {

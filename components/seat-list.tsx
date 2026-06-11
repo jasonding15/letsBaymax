@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { DeleteButton } from "@/components/delete-button";
@@ -11,9 +11,11 @@ import {
   BAY_LABELS,
   STATUS_EMOJI,
   STATUS_LABELS,
+  TENURES,
   type Bay,
   type Floor,
   type SeatEntry,
+  type Tenure,
 } from "@/lib/types";
 
 /** A list entry plus a server-formatted "last updated" time label. */
@@ -77,11 +79,17 @@ function PersonRow({
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
           <span className="truncate text-lg font-semibold">{entry.name}</span>
-          {showBay && entry.status === "at_bay" && entry.bay ? (
+          {entry.tenure ||
+          (showBay && entry.status === "at_bay" && entry.bay) ? (
             <div className="flex flex-wrap items-center gap-1.5">
-              <Badge variant="secondary">
-                {BAY_EMOJI[entry.bay]} {BAY_LABELS[entry.bay]} bay
-              </Badge>
+              {entry.tenure ? (
+                <Badge variant="outline">{entry.tenure}</Badge>
+              ) : null}
+              {showBay && entry.status === "at_bay" && entry.bay ? (
+                <Badge variant="secondary">
+                  {BAY_EMOJI[entry.bay]} {BAY_LABELS[entry.bay]} bay
+                </Badge>
+              ) : null}
             </div>
           ) : null}
           {entry.comment ? (
@@ -126,13 +134,21 @@ function SectionHeader({
 }
 
 export function SeatList({ entries }: { entries: SeatEntryView[] }) {
+  const [tenureFilter, setTenureFilter] = useState<Tenure | null>(null);
+
+  const filtered = useMemo(
+    () =>
+      tenureFilter ? entries.filter((e) => e.tenure === tenureFilter) : entries,
+    [entries, tenureFilter],
+  );
+
   const { downToBay, atBay, working } = useMemo(
     () => ({
-      downToBay: entries.filter((e) => e.status === "down_to_bay"),
-      atBay: entries.filter((e) => e.status === "at_bay"),
-      working: entries.filter((e) => e.status === "working"),
+      downToBay: filtered.filter((e) => e.status === "down_to_bay"),
+      atBay: filtered.filter((e) => e.status === "at_bay"),
+      working: filtered.filter((e) => e.status === "working"),
     }),
-    [entries],
+    [filtered],
   );
 
   // "At a bay" people grouped by floor (11 → 8) then bay (N, W, S, E). Only
@@ -169,8 +185,42 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {atBay.length > 0 ? (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-muted-foreground mr-1 text-xs font-semibold tracking-wide uppercase">
+          View
+        </span>
+        {([null, ...TENURES] as (Tenure | null)[]).map((t) => {
+          const active = tenureFilter === t;
+          return (
+            <button
+              key={t ?? "all"}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setTenureFilter(t)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-input bg-background hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              {t ?? "All"}
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="bg-card/50 rounded-xl border border-dashed px-6 py-10 text-center">
+          <p className="font-medium">No one here.</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            No {tenureFilter} is checked in right now.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {atBay.length > 0 ? (
         <section className="flex flex-col gap-3">
           <SectionHeader
             emoji={STATUS_EMOJI.at_bay}
@@ -238,6 +288,8 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
           </ul>
         </section>
       ) : null}
+        </div>
+      )}
     </div>
   );
 }
