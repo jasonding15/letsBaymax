@@ -5,12 +5,13 @@ export type Floor = (typeof FLOORS)[number];
 export const BAYS = ["N", "S", "E", "W"] as const;
 export type Bay = (typeof BAYS)[number];
 
-// Tenure buckets (Bain ACs, plus a catch-all).
-export const TENURES = ["AC1", "AC2", "Other"] as const;
+// Tenure buckets (Bain ACs, plus a catch-all). Spaces keep "ACI" vs "AC 1" clear.
+export const TENURES = ["ACI", "AC 1", "AC 2", "Other"] as const;
 export type Tenure = (typeof TENURES)[number];
 
 // Availability through the day. Only `at_bay` carries a floor + bay.
-export const STATUSES = ["working", "down_to_bay", "at_bay"] as const;
+// `beach` = "on the beach" (unstaffed / between cases), à la whosbeAChed.
+export const STATUSES = ["working", "down_to_bay", "at_bay", "beach"] as const;
 export type Status = (typeof STATUSES)[number];
 
 export const MAX_NAME_LENGTH = 50;
@@ -38,12 +39,14 @@ export const STATUS_LABELS: Record<Status, string> = {
   working: "Teammaxxing",
   down_to_bay: "Down to bay",
   at_bay: "At a bay",
+  beach: "On the beach",
 };
 
 export const STATUS_EMOJI: Record<Status, string> = {
   working: "💻",
   down_to_bay: "🙋",
   at_bay: "📍",
+  beach: "🏖️",
 };
 
 /** Short helper text shown under each status option. */
@@ -51,6 +54,7 @@ export const STATUS_HINTS: Record<Status, string> = {
   working: "Heads down and locked in — not at a bay",
   down_to_bay: "Free and down to hang, not there yet",
   at_bay: "Actually at a bay right now",
+  beach: "Unstaffed & free — see who else is beached",
 };
 
 export const BAY_LABELS: Record<Bay, string> = {

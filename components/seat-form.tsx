@@ -208,7 +208,7 @@ export function SeatForm() {
         <Label>
           What&apos;s your status? <span className="text-primary">*</span>
         </Label>
-        <div className="grid gap-1.5 sm:grid-cols-3">
+        <div className="grid gap-1.5 sm:grid-cols-2">
           {STATUSES.map((s) => {
             const selected = status === s;
             return (

@@ -140,11 +140,12 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
     [entries, tenureFilter],
   );
 
-  const { downToBay, atBay, working } = useMemo(
+  const { downToBay, atBay, working, beach } = useMemo(
     () => ({
       downToBay: filtered.filter((e) => e.status === "down_to_bay"),
       atBay: filtered.filter((e) => e.status === "at_bay"),
       working: filtered.filter((e) => e.status === "working"),
+      beach: filtered.filter((e) => e.status === "beach"),
     }),
     [filtered],
   );
@@ -289,6 +290,26 @@ export function SeatList({ entries }: { entries: SeatEntryView[] }) {
           />
           <ul className="flex flex-col gap-1.5">
             {working.map((entry, i) => (
+              <PersonRow key={entry.id} entry={entry} index={i} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {beach.length > 0 ? (
+        <section className="flex flex-col gap-2">
+          <SectionHeader
+            emoji={STATUS_EMOJI.beach}
+            label={STATUS_LABELS.beach}
+            count={beach.length}
+            dotClass="bg-amber-400"
+          />
+          <p className="text-muted-foreground -mt-1 text-sm text-balance">
+            🏖️ Unstaffed &amp; free to hang — here&apos;s who else is beached
+            today.
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {beach.map((entry, i) => (
               <PersonRow key={entry.id} entry={entry} index={i} />
             ))}
           </ul>
